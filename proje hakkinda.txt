@@ -1,0 +1,75 @@
+öncelikle bir harita üzerinde oynama yapmak istiyorsak folium kütüphanesine ihtiyacımız var
+öncelikle kütüphaneyi tanımlamak için import folium demek lazım ama ondan da öncesinde terminalden
+pip install folium ve pip3 install folium dememiz gerek ki bilgisayara bu kütüphaneyi tanımlayalım
+bunları yapıp import folium dedikten sonra önce map yapmaya sonrasında ise map üzerinde değişiklikler yapmaya
+başlayabiliriz. ilk yapacağımız şey harita tanımlamak o da şöyle:
+
+import folium
+worldMap=folium.Map(tiles="harita görünümü")
+worldMap.save("dosya adı.html")
+
+bunları yazdığımızda üzerinde hiç oynanmamış bir harita tamamlamış oluyoruz.
+
+eğer bir excel dosyasını projemize entegre edeceksek bu excel dosyasını ilk başta projemizin olduğu
+aynı dosya konumuna göndermemiz gerekiyor ve ardından pandas kütüphanesinden faydalanmamız gerek.
+
+pandas kütüphanesi excel dosyamız üzerinden verileri liste veritipinde projemize aktarmamızı sağlar.
+folium kütüphanesini bilgisayara tanımlama işlemlerinin aynısını(pip install pandas ve pip3 install pandas)
+dedikten sonra pandası
+
+import pandas
+veri=pandas.read_excel("dosya adı.xlsx")
+
+yaptıktan sonra kullanabiliriz. Bu excel dosyasında yaptığımız şey: bir tablo gibi olan verileri alıp
+kullanmak. örneğin enlem ve boylam koordinasyonlarını alarak onları harita üzerinden işlemek istiyoruz.
+
+enlemler=list(veri["enlemler"])
+
+yazınca enlemler sütünunda yazan tüm verileri almış oluyoruz.
+
+folium'a tekrar dönecek olursak. Folium aslında html,css ve javascript kodlarının python diline uyarlandığı bir
+kütüphanedir. Görsel şeyler yapacağız yani genelde bununla
+
+worldMap.add_child(folium.LayerControl()) yaptığımızda sağ üste 1 tane kutucuklar içeren bir menü oluşur
+
+vakaSayisiHaritasi=folium.FeatureGroup(name="Vaka Sayısı Dağılımı")
+olumOraniHaritasi=folium.FeatureGroup(name="Ölüm Oranı Dağılımı")
+
+bunları yazdığımızda ise tıklanıp harita üzerinde farklı bilgiler edindiğimiz özellik grupları açılır
+ancak bunları worldMap diye adlandırdığımız haritamıza tanıtmamız gerekir ve şöyle yaparız:
+
+worldMap.add_child(vakaSayisiHaritasi)
+worldMap.add_child(olumOraniHaritasi)
+
+ve eğer harita üzerinden asıl yapmak istediğimiz şeyi yapmaya başlayacak olursak...
+
+def vakaSayisiRenk(vaka):
+    if int(vaka)<100000:
+        return "green"
+    elif int(vaka)<300000:
+        return "white"
+    elif int(vaka)<750000:
+        return "orange"
+    else:
+        return "red"
+
+def vakaSayisiRadius(vaka):
+    if int(vaka) < 100000:
+        return 40000
+    elif int(vaka) < 300000:
+        return 100000
+    elif int(vaka) < 750000:
+        return 200000
+    else:
+        return 400000
+
+for i,j,k in zip(enlemler,boylamlar,vaka):
+    vakaSayisiHaritasi.add_child(folium.Circle(location=(i,j), radius=vakaSayisiRadius(k),
+                                     color=vakaSayisiRenk(k),
+                                     fill_color=vakaSayisiRenk(k),
+                                     fill_opacity=0.3))
+
+
+böyle yaptığımızda da harita üzerinde excelden aldığımız enlem boylam ve vaka bilgileri for döngüsü ile
+işaretlenmiş, ardından folium.Circle ile ise o işaret yapan çemberin özelliklerini fonksiyonlar aracılığı
+ile kolayca halletmiş oluruz.
